@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\ApiException;
 use App\Http\Resources\ShowCollection;
 use App\Http\Resources\ShowDetailResource;
-use App\Http\Resources\ShowResource;
 use App\Models\Account;
 use App\Models\Show;
 use App\Services\amoCRM\Client;
@@ -22,10 +22,10 @@ class ShowController extends Controller
      * @throws GuzzleException
      * @throws Exception
      */
-    public function create(Request $request)
+    public function create(string $leadId, Request $request)
     {
         $show = Show::query()->create([
-            'lead_id' => $request->lead_id,
+            'lead_id' => $leadId,
             'status'  => $request->status,
             'object'  => $request->object,
             'type'    => $request->type,
@@ -55,7 +55,7 @@ class ShowController extends Controller
      * @throws GuzzleException
      * @throws Exception
      */
-    public function update(int $lead_id, Show $show, Request $request)
+    public function update(int $leadId, Show $show, Request $request)
     {
         $show->update([
             'status'  => $request->status,
@@ -82,6 +82,6 @@ class ShowController extends Controller
     //все показы по сделке
     public function list(string $leadId)
     {
-        return new ShowCollection(Show::whereLeadId($leadId)->get());
+        return new ShowCollection(Show::whereLeadId($leadId)->sort('datetime', 'ASC')->get());
     }
 }
