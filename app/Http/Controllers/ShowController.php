@@ -82,6 +82,6 @@ class ShowController extends Controller
     //все показы по сделке
     public function list(string $leadId)
     {
-        return new ShowCollection(Show::whereLeadId($leadId)->get()->sortBy('datetime', 'ASC'));
+        return new ShowCollection(Show::whereLeadId($leadId)->get()->sortBy('datetime'));
     }
 }
