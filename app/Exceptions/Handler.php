@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Response;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -45,12 +46,12 @@ class Handler extends ExceptionHandler
     {
         $this->renderable(function (Throwable $e) {
 
-            return [
+            return new Response([
                 'success' => false,
                 'data' => [
                     'message' => mb_substr($e->getMessage(), 0, 100)
                 ]
-            ];
+            ]);
         });
     }
 }
