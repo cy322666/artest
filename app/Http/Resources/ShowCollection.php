@@ -17,7 +17,7 @@ class ShowCollection extends ResourceCollection
         return [
             'success' => true,
             'data'    => [
-                'showings' => $this->collects()
+                'showings' => $this->collection
             ]
         ];
     }
