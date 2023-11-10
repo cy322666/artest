@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ShowController extends Controller
 {
@@ -80,8 +81,10 @@ class ShowController extends Controller
     }
 
     //все показы по сделке
-    public function list(string $leadId)
+    public function list(string $leadId, Request $request)
     {
+        Log::info(__METHOD__.' : '.$leadId, $request->toArray());
+
         return new ShowCollection(Show::whereLeadId($leadId)->get()->sortBy('datetime'));
     }
 }
