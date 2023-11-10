@@ -25,6 +25,8 @@ class ShowController extends Controller
      */
     public function create(string $leadId, Request $request)
     {
+        Log::info(__METHOD__.' : '.$leadId, $request->toArray());
+
         $show = Show::query()->create([
             'lead_id' => $leadId,
             'status'  => $request->status,
@@ -58,6 +60,8 @@ class ShowController extends Controller
      */
     public function update(int $leadId, Show $show, Request $request)
     {
+        Log::info(__METHOD__.' : '.$leadId, $request->toArray());
+
         $show->update([
             'status'  => $request->status,
             'object'  => $request->object,
