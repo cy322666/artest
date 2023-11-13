@@ -42,7 +42,7 @@
                         </div>
 
                         <div class="col-12">
-                            <a class="text-center btn btn-sl btn-link btn-block" href="https://{{ env('AMOCRM_SUBDOMAIN') }}/amocrm.ru/leads/detail/{{ $show->id }}">В сделку</a>
+                            <a class="text-center btn btn-sl btn-link btn-block" href="https://{{ env('AMOCRM_SUBDOMAIN') }}.amocrm.ru/leads/detail/{{ $show->lead_id }}">В сделку</a>
                         </div>
                     </div>
             </form>
