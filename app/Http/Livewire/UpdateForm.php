@@ -23,8 +23,6 @@ class UpdateForm extends Component
 
     public Show $show;
 
-    public $id;
-
     public string $object;
     public string $status;
     public string $type;
@@ -48,7 +46,6 @@ class UpdateForm extends Component
             $this->datetime = $this->show->datetime;
             $this->isNew = $this->show->is_new;
             $this->isClose = $this->show->is_close;
-            $this->id = $this->show->id;
         }
 
         return view('livewire.update-form');
