@@ -45,7 +45,7 @@ class Telegram
                 "url"  => "https://".env('AMOCRM_SUBDOMAIN').".amocrm.ru/leads/detail/".$show->lead_id
             ], [
                 "text" => "Изменить",
-                "url"  => env('FORM_UPDATE').'?lead_id='.$show->lead_id,
+                "url"  => env('FORM_UPDATE').$show->id,
             ]]
         );
     }
