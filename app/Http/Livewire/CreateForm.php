@@ -14,6 +14,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 class CreateForm extends Component
@@ -37,6 +38,8 @@ class CreateForm extends Component
      */
     public function save(Request $request)
     {
+        Log::info(__METHOD__, $request->toArray());
+
         $amoApi = (new Client(Account::query()->first()))->init();
 
         $contact = Contacts::search([
@@ -59,7 +62,7 @@ class CreateForm extends Component
 
         $show = Show::query()->create([
             'lead_id' => $lead->id,
-            'status'  => $this->status,
+            'status'  => 0,
             'object'  => $this->object,
             'type'    => $this->type,
             'name'    => $contact->name,

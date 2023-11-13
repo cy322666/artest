@@ -55,7 +55,7 @@ class Show extends Model
             $this->name,
         ]);
 
-        $isNew = ($this->status == 0 && $this->is_new === true) ?  '#новый' : null;
+        $isNew = ($this->status == 0 && $this->is_new === true) ?  "\n".'#новый' : null;
 
         return $title. trim($body, "/").$isNew."\n ";
     }
