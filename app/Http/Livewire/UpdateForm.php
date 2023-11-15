@@ -4,17 +4,16 @@ namespace App\Http\Livewire;
 
 use App\Models\Account;
 use App\Models\Show;
+use App\Models\Staff;
 use App\Services\amoCRM\Client;
-use App\Services\amoCRM\Models\Contacts;
-use App\Services\amoCRM\Models\Leads;
 use App\Services\Telegram;
 use Carbon\Carbon;
 use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 class UpdateForm extends Component
@@ -24,11 +23,15 @@ class UpdateForm extends Component
     public Show $show;
 
     public string $object;
-    public string $status;
     public string $type;
+    public string $phone;
+    public string $name;
     public string $datetime;
+    public int $responsible_user_id;
 
-    public bool $isNew = false;
+    public array $staffs;
+    public string $staff;
+
     public bool $isClose = false;
 
     /**
@@ -38,20 +41,24 @@ class UpdateForm extends Component
     {
         $this->show = $request->show ?? $this->show;
 
+        $this->staffs = Staff::query()->get()->toArray();
+
         if ($request->show) {
 
             $this->object = $this->show->object;
             $this->type   = $this->show->type;
             $this->status = $this->show->status;
             $this->datetime = $this->show->datetime;
-            $this->isNew = $this->show->is_new;
+            $this->name = $this->show->name;
             $this->isClose = $this->show->is_close;
+            $this->staff = $this->show->responsible_user_id;
         }
 
         return view('livewire.update-form');
     }
 
     /**
+     * @throws GuzzleException
      * @throws Exception
      */
     public function save()
@@ -60,7 +67,9 @@ class UpdateForm extends Component
             'status'  => $this->status,
             'object'  => $this->object,
             'type'    => $this->type,
+            'name'    => $this->name,
             'is_close' => $this->status == (2 || 3),
+            'responsible_user_id' => $this->staff,
             'datetime' => Carbon::parse($this->datetime)->format('Y-m-d H:i'),
         ]);
 
@@ -74,6 +83,6 @@ class UpdateForm extends Component
         $note->text = $this->show->buildTextAmo();
         $note->save();
 
-        //TODO redirect to chat?
+        redirect('https://'.env('AMOCRM_SUBDOMAIN').'.amocrm.ru/leads/detail/'.$lead->id);
     }
 }

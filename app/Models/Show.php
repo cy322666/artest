@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\amoCRM\Client;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,6 +20,7 @@ class Show extends Model
         'is_close',
         'datetime',
         'pipeline_id',
+        'responsible_user_id',
     ];
 
     public function matchStatus() : string
@@ -26,8 +28,9 @@ class Show extends Model
         return match ((int)$this->status) {
 
             0 => 'запланирована',
-            1 => 'проведена',
-            3 => 'перенесена',
+            1 => 'проведена (изменено)',
+            2 => 'отменена (изменено)',
+            3 => 'перенесена (изменено)',
         };
     }
 
@@ -43,20 +46,36 @@ class Show extends Model
         };
     }
 
+    public function buildTitleTg() : string
+    {
+        return '*Встреча '.$this->matchStatus()."*\n";
+    }
+
+    public function getStaffName($leadId) : string
+    {
+        $amoApi = (new Client(Account::query()->first()))->init();
+
+        $lead = $amoApi->service->leads()->find($this->lead_id);
+
+        return Staff::query()
+            ->where('staff_id', $lead->responsible_user_id)
+            ->first()
+            ->name;
+    }
+
     public function buildTextTg() : string
     {
-        $title = '*Встреча '.$this->matchStatus()."*\n";
-
-        $body = implode("/", [
-            $this->datetime,
-            $this->object,
-            $this->type,
-            $this->name,
+        $body = implode("\n", [
+            'Объект : '.$this->object,
+            'Дата и время : '.$this->datetime,
+            'Тип встречи : '.$this->type,
+            'Имя клиента : '.$this->name,
+            'Брокер : '.$this->getStaffName($this->lead_id),
         ]);
 
         $isNew = ($this->status == 0 && $this->is_new === true) ?  "\n".'#новый' : null;
 
-        return $title. trim($body, "/").$isNew."\n ";
+        return trim($body, "/").$isNew."\n ";
     }
 
     public function buildTextAmo() : string
@@ -64,10 +83,11 @@ class Show extends Model
         return implode("\n", [
             'Встреча '.$this->matchStatus(),
             '--------------------',
-            $this->datetime,
-            $this->object,
-            $this->type,
-            $this->name,
+            'Объект : '.$this->object,
+            'Дата и время : '.$this->datetime,
+            'Тип встречи : '.$this->type,
+            'Имя клиента : '.$this->name,
+            'Брокер : '.$this->getStaffName($this->lead_id),
         ]);
     }
 }

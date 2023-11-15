@@ -35,18 +35,31 @@ class Telegram
         ]);
     }
 
+    /**
+     * @throws GuzzleException
+     */
     public static function pushChat(Show $show)
     {
-        Telegram::send(
-            $show->buildTextTg(),
-            $show->matchChatId(),
-            env('TG_TOKEN'), [[
+        if ($show->status == 0) {
+
+            $arrayButtons = [[
                 "text" => "В сделку",
                 "url"  => "https://".env('AMOCRM_SUBDOMAIN').".amocrm.ru/leads/detail/".$show->lead_id
             ], [
                 "text" => "Изменить",
                 "url"  => env('FORM_UPDATE').$show->id,
-            ]]
+            ]];
+        } else
+            $arrayButtons = [[
+                "text" => "В сделку",
+                "url"  => "https://".env('AMOCRM_SUBDOMAIN').".amocrm.ru/leads/detail/".$show->lead_id
+            ]];
+
+        Telegram::send(
+            $show->buildTitleTg()."\n".$show->buildTextTg(),
+            $show->matchChatId(),
+            env('TG_TOKEN'),
+            $arrayButtons,
         );
     }
 }

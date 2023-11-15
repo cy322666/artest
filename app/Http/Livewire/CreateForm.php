@@ -4,12 +4,13 @@ namespace App\Http\Livewire;
 
 use App\Models\Account;
 use App\Models\Show;
+use App\Models\Staff;
 use App\Services\amoCRM\Client;
 use App\Services\amoCRM\Models\Contacts;
 use App\Services\amoCRM\Models\Leads;
 use App\Services\Telegram;
 use Carbon\Carbon;
-use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -24,53 +25,61 @@ class CreateForm extends Component
     public string $object;
     public string $type;
     public string $phone;
+    public string $name;
     public string $datetime;
+    public int $responsible_user_id;
+
+    public array $staffs;
+    public string $staff;
 
     public bool $isNew = false;
 
     public function render(): Factory|View|Application
     {
+        $this->staffs = Staff::query()->get()->toArray();
+
         return view('livewire.create-form');
     }
 
     /**
-     * @throws Exception
+     * @throws GuzzleException
      */
     public function save(Request $request)
     {
         Log::info(__METHOD__, $request->toArray());
 
+        $show = Show::query()->create([
+            'status'  => 0,
+            'object'  => $this->object,
+            'type'    => $this->type,
+            'name'    => $this->name,
+            'is_new'  => $this->isNew,
+            'is_close' => false,
+            'responsible_user_id' => $this->staff,
+            'datetime' => Carbon::parse($this->datetime)->format('Y-m-d H:i'),
+        ]);
+
         $amoApi = (new Client(Account::query()->first()))->init();
 
-        $contact = Contacts::search([
-            'Телефоны' => [$this->phone]
-        ], $amoApi);
+        $contact = Contacts::search(['Телефоны' => [$this->phone]], $amoApi);
 
         if (!$contact) {
 
             $this->isNew = true;
 
-            $contact = Contacts::create($amoApi, 'Новый клиент');
+            $contact = Contacts::create($amoApi, $show->name);
             $contact = Contacts::update($contact, ['Телефоны' => [$this->phone]]);
-        }
+        } else
+            $lead = Leads::search($contact, $amoApi);
 
-        $lead = Leads::search($contact, $amoApi);
-
-        $lead = $lead !== false ? $lead : Leads::create($contact, [
-            'pipeline_id' => $request->pipeline_id,
+        $lead = !empty($lead) ? $lead : Leads::create($contact, [
+            'pipeline_id' => $show->pipeline_id,
+            'responsible_user_id' => $show->staff,
         ], 'Новый показ');
 
-        $show = Show::query()->create([
-            'lead_id' => $lead->id,
-            'status'  => 0,
-            'object'  => $this->object,
-            'type'    => $this->type,
-            'name'    => $contact->name,
-            'is_new'  => $this->isNew,
-            'is_close' => false,
-            'datetime' => Carbon::parse($this->datetime)->format('Y-m-d H:i'),
-            'pipeline_id' => $lead->pipeline_id,
-        ]);
+        $show->lead_id = $lead->id;
+        $show->pipeline_id = $lead->pipeline_id;
+        $show->save();
 
         Telegram::pushChat($show);
 
@@ -78,6 +87,6 @@ class CreateForm extends Component
         $note->text = $show->buildTextAmo();
         $note->save();
 
-        //TODO redirect to chat?
+        redirect('https://'.env('AMOCRM_SUBDOMAIN').'.amocrm.ru/leads/detail/'.$lead->id);
     }
 }
