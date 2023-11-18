@@ -34,15 +34,53 @@ class Show extends Model
         };
     }
 
-    //TODO
-    public function matchChatId() : string
+    public function matchChatId(string $city) : string
+    {
+        return match ($city) {
+
+            'msk'   => '-1001298056437',
+            'spb'   => '-1001275226849',
+            'dubai' => '-1002085907391',
+        };
+    }
+
+    public function matchChatIdByPipeline() : string
     {
         return match ($this->pipeline_id) {
 
-            0  => '-4075342320',
-            1  => '-4075342320',
-            2  => '-4075342320',
-            default  => '-4075342320',
+            1287231 => '-1001298056437',
+            400942  => '-1001275226849',
+            5219508 => '-1002085907391',
+        };
+    }
+
+    public static function matchPipelineIdByCity(string $city): int
+    {
+        return match ($city) {
+
+            'msk'  => 1287231,
+            'spb'  => 400942,
+            'dubai'=> 5219508,
+        };
+    }
+
+    public function matchCameStatusId(): int
+    {
+        return match ($this->pipeline_id) {
+
+            1287231 => 21145983,
+            400942  => 16970728,
+            5219508 => 46654344,
+        };
+    }
+
+    public function matchCityByPipelineId(): string
+    {
+        return match ($this->pipeline_id) {
+
+            1287231 => 'msk',
+            400942  => 'spb',
+            5219508 => 'dubai',
         };
     }
 

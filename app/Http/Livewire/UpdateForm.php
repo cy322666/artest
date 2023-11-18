@@ -28,6 +28,7 @@ class UpdateForm extends Component
     public string $name;
     public string $datetime;
     public int $responsible_user_id;
+    public string $city;
 
     public array $staffs;
     public string $staff;
@@ -40,8 +41,10 @@ class UpdateForm extends Component
     public function render(Request $request): Factory|View|Application
     {
         $this->show = $request->show ?? $this->show;
-
         $this->staffs = Staff::query()->get()->toArray();
+
+        if ($request->city)
+            $this->city = $request->city;
 
         if ($request->show) {
 
@@ -78,6 +81,12 @@ class UpdateForm extends Component
         $amoApi = (new Client(Account::query()->first()))->init();
 
         $lead = $amoApi->service->leads()->find($this->show->lead_id);
+
+        if ($this->show->status == 1) {
+
+            $lead->status_id = $this->show->matchCameStatusId();
+            $lead->save();
+        }
 
         $note = $lead->createNote();
         $note->text = $this->show->buildTextAmo();

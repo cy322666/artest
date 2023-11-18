@@ -28,15 +28,21 @@ class CreateForm extends Component
     public string $name;
     public string $datetime;
     public int $responsible_user_id;
+    public string $city;
 
     public array $staffs;
     public string $staff;
 
     public bool $isNew = false;
 
-    public function render(): Factory|View|Application
+    public function render(Request $request): Factory|View|Application
     {
+        Log::info(__METHOD__, $request->toArray());
+
         $this->staffs = Staff::query()->get()->toArray();
+
+        if ($request->city)
+            $this->city = $request->city;
 
         return view('livewire.create-form');
     }
@@ -55,6 +61,7 @@ class CreateForm extends Component
             'name'    => $this->name,
             'is_new'  => $this->isNew,
             'is_close' => false,
+            'pipeline_id' => Show::matchPipelineIdByCity($this->city),
             'responsible_user_id' => $this->staff,
             'datetime' => Carbon::parse($this->datetime)->format('Y-m-d H:i'),
         ]);
@@ -78,8 +85,13 @@ class CreateForm extends Component
         ], 'Новый показ');
 
         $show->lead_id = $lead->id;
-        $show->pipeline_id = $lead->pipeline_id;
         $show->save();
+
+        if ($show->status == 1) {
+
+            $lead->status_id = $show->matchCameStatusId();
+            $lead->save();
+        }
 
         Telegram::pushChat($show);
 

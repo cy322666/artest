@@ -49,6 +49,12 @@ class ShowController extends Controller
         $note->text = $show->buildTextAmo();
         $note->save();
 
+        if ($show->status == 1) {
+
+            $lead->status_id = $show->matchCameStatusId();
+            $lead->save();
+        }
+
         return new ShowDetailResource($show);
     }
 
@@ -80,6 +86,12 @@ class ShowController extends Controller
         $note = $lead->createNote();
         $note->text = $show->buildTextAmo();
         $note->save();
+
+        if ($show->status == 1) {
+
+            $lead->status_id = $show->matchCameStatusId();
+            $lead->save();
+        }
 
         return new ShowDetailResource($show);
     }

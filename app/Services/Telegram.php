@@ -47,7 +47,7 @@ class Telegram
                 "url"  => "https://".env('AMOCRM_SUBDOMAIN').".amocrm.ru/leads/detail/".$show->lead_id
             ], [
                 "text" => "Изменить",
-                "url"  => env('FORM_UPDATE').$show->id,
+                "url"  => env('FORM_UPDATE').$show->id.'?city='.$show->matchCityByPipelineId(),
             ]];
         } else
             $arrayButtons = [[
@@ -57,7 +57,7 @@ class Telegram
 
         Telegram::send(
             $show->buildTitleTg()."\n".$show->buildTextTg(),
-            $show->matchChatId(),
+            $show->matchChatIdByPipeline(),
             env('TG_TOKEN'),
             $arrayButtons,
         );
